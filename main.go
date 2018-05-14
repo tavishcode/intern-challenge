@@ -60,7 +60,7 @@ func main() {
 		// read one line
 		line, err = r.Read()
 		// reached end of file ?
-        if err == io.EOF { 
+    	if err == io.EOF { 
             break
 		}
 		// skip entry if error found during read
