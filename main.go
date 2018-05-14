@@ -59,9 +59,10 @@ func main() {
 	for {
 		// read one line
 		line, err = r.Read()
+		
 		// reached end of file ?
-    	if err == io.EOF { 
-            break
+		if err == io.EOF { 
+			break
 		}
 		// skip entry if error found during read
 		if err != nil {
