@@ -50,7 +50,7 @@ func main() {
 	// ensure file is closed at end of program
 	defer file.Close() 
 
-	// csv parsing
+	// init csv reader
 	r := csv.NewReader(file)
 
 	// skip header line
@@ -73,7 +73,7 @@ func main() {
 		line[0] = strings.TrimSpace(line[0])
 		line[1] = strings.TrimSpace(line[1])
 
-		// split repositoy field into owner and name components
+		// split repository field into owner and name components
 		repo := strings.Split(line[0],"/")
 
 		// skip repository if name is incorrectly formmated
