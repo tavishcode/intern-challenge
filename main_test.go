@@ -48,8 +48,14 @@ func TestLatestVersions(t *testing.T) {
 			expectedResult: []string{"2.2.1"},
 			minVersion:     semver.New("2.2.1"),
 		},
+		// new test-cases begin here
 		{
 			versionSlice:   []string{"2.2.1", "2.2.0"},
+			expectedResult: nil,
+			minVersion:     semver.New("2.2.2"),
+		},
+		{
+			versionSlice:   nil,
 			expectedResult: nil,
 			minVersion:     semver.New("2.2.2"),
 		},

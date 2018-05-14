@@ -45,6 +45,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
+	// ensure file is closed at end of program
+	defer file.Close() 
 
 	// csv parsing
 	r := csv.NewReader(file)
@@ -59,12 +62,16 @@ func main() {
 			continue
 		}
 
+		// trim leading and trailing whitespace
+		line[0] = strings.TrimSpace(line[0])
+		line[1] = strings.TrimSpace(line[1])
+
 		// split repositoy field into owner and name components
 		repo := strings.Split(line[0],"/")
 
 		// skip repository if name is incorrectly formmated
 		if len(repo) < 2 {
-			fmt.Printf("Repository field incorrectly formatted \"%s\"\n", line[0])
+			fmt.Printf("Repository field incorrectly formatted '%s'\n", line[0])
 			continue
 		}
 		releases, _, err := client.Repositories.ListReleases(ctx, repo[0], repo[1], opt)
@@ -75,7 +82,13 @@ func main() {
 			continue
 		}
 
-		minVersion := semver.New(line[1])
+		minVersion, err := semver.NewVersion(line[1])
+		// skip entry if min version is not in valid format
+		if err != nil {
+			fmt.Printf("Minversion '%s' is invalid\n", line[1])
+			continue
+		}
+
 		allReleases := make([]*semver.Version, len(releases))
 
 		for i, release := range releases {
