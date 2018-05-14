@@ -7,6 +7,7 @@ import (
 	"encoding/csv"
 	"strings"
 	"log"
+	"io"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/google/go-github/github"
@@ -39,7 +40,7 @@ func main() {
 
 	// get filename from cmd args
 	if len(os.Args) < 2 {
-		log.Fatal("Missing filename argument")
+		log.Fatal("Missing filename argument\n")
 	}
 	file, err := os.Open(os.Args[1])
 	if err != nil {
@@ -51,14 +52,20 @@ func main() {
 
 	// csv parsing
 	r := csv.NewReader(file)
-	lines, err := r.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	for i, line := range lines {
-		// skip header line
-		if i == 0 {
+	// skip header line
+	line, err := r.Read()
+
+	for {
+		// read one line
+		line, err = r.Read()
+		// reached end of file ?
+        if err == io.EOF { 
+            break
+		}
+		// skip entry if error found during read
+		if err != nil {
+			fmt.Printf(err.Error())
 			continue
 		}
 
@@ -74,6 +81,8 @@ func main() {
 			fmt.Printf("Repository field incorrectly formatted '%s'\n", line[0])
 			continue
 		}
+
+		// retrieve releases from Github
 		releases, _, err := client.Repositories.ListReleases(ctx, repo[0], repo[1], opt)
 
 		// skip repository if releases could not be retrieved
@@ -102,11 +111,13 @@ func main() {
 			// store version string as a semver struct
 			allReleases[i] = semver.New(versionString)
 		}
+
+		// get latest versions
 		versionSlice := LatestVersions(allReleases, minVersion)
 		if versionSlice != nil {
 			fmt.Printf("latest versions of %s: %s\n", line[0], versionSlice)
 		} else {
-			fmt.Printf("Min version is greater than latest available version")
+			fmt.Printf("Min version is greater than latest available version\n")
 		}
-	}
+    }
 }
