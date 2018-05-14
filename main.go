@@ -6,6 +6,7 @@ import (
 	"os"
 	"encoding/csv"
 	"strings"
+	"log"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/google/go-github/github"
@@ -37,16 +38,19 @@ func main() {
 	opt := &github.ListOptions{PerPage: 10}
 
 	// get filename from cmd args
+	if len(os.Args) < 2 {
+		log.Fatal("Missing filename argument")
+	}
 	file, err := os.Open(os.Args[1])
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// csv parsing
 	r := csv.NewReader(file)
 	lines, err := r.ReadAll()
 	if err != nil {
-		panic( err)
+		log.Fatal(err)
 	}
 
 	for i, line := range lines {
@@ -58,6 +62,11 @@ func main() {
 		// split repositoy field into owner and name components
 		repo := strings.Split(line[0],"/")
 
+		// skip repository if name is incorrectly formmated
+		if len(repo) < 2 {
+			fmt.Printf("Repository field incorrectly formatted \"%s\"\n", line[0])
+			continue
+		}
 		releases, _, err := client.Repositories.ListReleases(ctx, repo[0], repo[1], opt)
 
 		// skip repository if releases could not be retrieved
@@ -81,6 +90,10 @@ func main() {
 			allReleases[i] = semver.New(versionString)
 		}
 		versionSlice := LatestVersions(allReleases, minVersion)
-		fmt.Printf("latest versions of %s: %s\n", line[0], versionSlice)
+		if versionSlice != nil {
+			fmt.Printf("latest versions of %s: %s\n", line[0], versionSlice)
+		} else {
+			fmt.Printf("Min version is greater than latest available version")
+		}
 	}
 }

@@ -1,4 +1,2 @@
 repository,min_version
-crap/crap,1.1.0
-kubernetes/kubernetes,1.8.0
-prometheus/prometheus,2.2.0
+,1.1.0
