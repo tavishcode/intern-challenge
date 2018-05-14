@@ -1,4 +1,0 @@
-repository,min_version
-prometheus/prometheus,2.2.0
-kubernetes/kubernetes,1.8.0
-
